@@ -1,292 +1,315 @@
 # Streamliner-AI 🤖🎬
 
-[![Estado del CI](https://github.com/anthonydavalos/streamliner-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/anthonydavalos/streamliner-ai/actions/workflows/ci.yml)
-[![Python Version](https://img.shields.io/badge/python-3.13.3-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Overview
 
-![Logo de Streamliner-AI](assets/logo.png)
+**Streamliner-AI** is a fully automated, asynchronous Python pipeline designed to monitor Kick streamers, detect viral high-energy moments, generate vertical clips optimized for social media, and publish them to TikTok without manual intervention.
 
-**Streamliner-AI** es un pipeline 100% automático y asíncrono en Python, diseñado para monitorizar streamers de Kick, detectar momentos virales de alta emoción, generar clips verticales optimizados para redes sociales y publicarlos en TikTok sin intervención manual.
+The system leverages the **official Kick API** with **OAuth2 Client Credentials** authentication for stable, efficient, and robust stream monitoring. It intelligently processes live streams in real-time or recorded VODs to identify highlights using audio energy analysis, speech-to-text transcription, and keyword detection.
 
-Este proyecto utiliza la **API oficial de Kick**, autenticándose vía **OAuth2 (Client Credentials)** para una monitorización estable, eficiente y robusta.
+## Features
 
------
+- **Official API Authentication**: Connects to Kick using OAuth2 Client Credentials flow for stable and authorized access
+- **Asynchronous Monitoring**: Uses `asyncio` and `httpx` to monitor multiple streamers concurrently with a single process
+- **Intelligent Detection System**:
+  - Analyzes audio energy (RMS) to quickly identify emotional peaks
+  - Uses `faster-whisper` to transcribe only high-energy segments, saving processing time
+  - Customizable scoring system combining audio energy and 200+ keyword patterns
+- **Automatic Vertical Rendering**: Uses `ffmpeg` to create 9:16 format clips with blurred backgrounds, centered original content, and burned-in subtitles
+- **TikTok Publishing**: Integrates with TikTok Content API for automatic clip uploads
+- **Robust CLI**: Command-line interface built with `click` for easy management
+- **Production Ready**: Includes Docker configuration, unit tests, and CI pipeline with GitHub Actions
+- **Real-time Processing**: Supports both live stream chunk processing and full VOD analysis
+- **Flexible Storage**: Supports local filesystem and S3-compatible storage (AWS S3, Cloudflare R2)
 
-## 📋 Tabla de Contenidos
+## Technology Stack
 
-1.  [✨ Características Principales](#-características-principales)
-2.  [⚙️ Arquitectura del Sistema](#️-arquitectura-del-sistema)
-3.  [🚀 Guía de Inicio Rápido](#-guía-de-inicio-rápido)
-4.  [🔧 Instalación y Configuración Detallada](#-instalación-y-configuración-detallada)
-      - [Prerrequisitos](#prerrequisitos)
-      - [Pasos de Instalación](#pasos-de-instalación)
-      - [Configuración de la API de Kick](#configuración-de-la-api-de-kick)
-      - [Configuración de la API de TikTok](#configuración-de-la-api-de-tiktok)
-      - [Configuración del Proyecto](#configuración-del-proyecto)
-5.  [💻 Uso de la Aplicación](#-uso-de-la-aplicaci%C3%B3n)
-6.  [🐳 Despliegue con Docker](#-despliegue-con-docker)
-7.  [🛠️ Guía de Desarrollo](#️-guía-de-desarrollo)
-8.  [🧠 Profundización Técnica: El Camino a la API Oficial](#-profundización-técnica-el-camino-a-la-api-oficial)
-9.  [📈 Mejoras Futuras](#configuración-de-la-api-de-kick-mejoras-futuras)
+### Core Technologies
+- **Python 3.10+** (developed and tested with Python 3.13.3)
+- **asyncio** - Asynchronous I/O for concurrent stream monitoring
+- **httpx** - Modern async HTTP client with HTTP/2 support
 
------
+### Media Processing
+- **FFmpeg** - Video/audio processing, cutting, and rendering
+- **Streamlink** - Stream extraction and downloading
+- **faster-whisper** - Efficient speech-to-text transcription
+- **soundfile** & **scipy** - Audio analysis and processing
+- **scenedetect** - Scene change detection for highlight optimization
 
-## ✨ Características Principales
+### AI/ML
+- **PyTorch** - Deep learning framework for Whisper model
+- **faster-whisper** - Optimized Whisper implementation
 
-  * **Autenticación Oficial:** Se conecta a la API de Kick usando el flujo **OAuth2 Client Credentials**, garantizando un acceso estable y autorizado.
-  * **Monitorización Asíncrona:** Utiliza `asyncio` y `httpx` para vigilar múltiples streamers de forma concurrente y eficiente con un solo proceso.
-  * **Detección Inteligente y Eficiente:**
-      * Analiza la energía del audio (RMS) para encontrar picos de emoción rápidamente.
-      * Utiliza `faster-whisper` para transcribir **únicamente** los segmentos de alta energía, ahorrando tiempo de procesamiento.
-      * Un sistema de puntuación personalizable combina la energía del audio y **más de 200 palabras clave y jergas peruanas** para identificar los mejores momentos.
-  * **Renderizado Vertical Automático:** Emplea `ffmpeg` para crear clips en formato 9:16 con fondo desenfocado, el clip original centrado y subtítulos quemados con estilos personalizables.
-  * **Publicación en TikTok:** Se integra con la API de Contenido de TikTok para subir los clips generados de forma automática.
-  * **CLI Robusta:** Interfaz de Línea de Comandos basada en `click` para una gestión sencilla.
-  * **Listo para Producción:** Incluye configuración para `Docker`, pruebas unitarias y un pipeline de Integración Continua (CI) con GitHub Actions.
+### APIs & Integration
+- **Kick API** - OAuth2 authentication and stream monitoring
+- **TikTok Content API** - Automated video publishing
 
-## ⚙️ Arquitectura del Sistema
+### Development & Testing
+- **pytest** - Unit testing framework
+- **ruff** - Fast Python linter and formatter
+- **Docker** - Containerization for deployment
+- **GitHub Actions** - Continuous Integration pipeline
 
-El sistema opera como un pipeline estable que utiliza la autenticación oficial de Kick para asegurar el acceso a los datos.
+### Configuration & Logging
+- **python-dotenv** - Environment variable management
+- **PyYAML** - Configuration file parsing
+- **loguru** - Advanced logging with structured output
+- **click** - CLI framework
 
-![Diagrama de Arquitectura de Streamliner-AI](assets/architecture-diagram.png)
+## Project Structure
 
-## 🚀 Guía de Inicio Rápido
+```
+streamliner-ai/
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # CI/CD pipeline configuration
+├── assets/
+│   ├── architecture-diagram.png
+│   └── logo.png
+├── scripts/
+│   └── generate_tiktok_tokens.py  # TikTok OAuth token generator
+├── src/
+│   └── streamliner/
+│       ├── __init__.py
+│       ├── cli.py              # Command-line interface
+│       ├── config.py           # Configuration management
+│       ├── cutter.py           # Video cutting utilities
+│       ├── detector.py         # Highlight detection engine
+│       ├── downloader.py       # Stream/VOD downloader
+│       ├── monitor.py          # Stream monitoring system
+│       ├── pipeline.py         # Main processing pipeline
+│       ├── render.py           # Video rendering engine
+│       ├── stt.py              # Speech-to-text transcription
+│       ├── worker.py           # Real-time chunk processor
+│       ├── publisher/
+│       │   ├── __init__.py
+│       │   └── tiktok.py       # TikTok API integration
+│       └── storage/
+│           ├── __init__.py
+│           ├── base.py         # Storage interface
+│           ├── local.py        # Local filesystem storage
+│           └── s3.py           # S3-compatible storage
+├── tests/
+│   ├── test_cutter.py
+│   ├── test_detector.py
+│   └── test_worker_cleanup.py
+├── .env.template               # Environment variables template
+├── .gitignore
+├── config.yaml.example         # Configuration template
+├── docker-composer.yml         # Docker Compose configuration
+├── Dockerfile                  # Docker image definition
+├── pyproject.toml              # Python project metadata
+├── README.md
+└── requirements.txt            # Python dependencies
+```
 
-Sigue estos pasos para poner en marcha Streamliner AI en tu sistema.
+### Key Components
 
-### 1. Requisitos Previos (¡Importante!)
+- **cli.py**: Entry point for all commands (monitor, process, upload)
+- **monitor.py**: Manages real-time stream monitoring and chunk recording
+- **detector.py**: Analyzes audio and transcripts to identify highlights
+- **pipeline.py**: Orchestrates the complete processing workflow
+- **worker.py**: Handles real-time chunk processing and buffering
+- **render.py**: Creates vertical format videos with subtitles
+- **publisher/tiktok.py**: Handles TikTok API authentication and uploads
+- **storage/**: Abstraction layer for local and cloud storage
 
-Antes de instalar las dependencias de Python, asegúrate de tener lo siguiente:
+## Architecture
 
-* **Python 3.10 o superior** (descárgalo de [python.org](https://www.python.org/downloads/)).
-* **FFmpeg (¡CRÍTICO!)**: FFmpeg es esencial para el procesamiento de audio y video (extracción, corte, renderizado). **Sin él, la aplicación no funcionará.**
+The system operates as a stable pipeline using official Kick authentication to ensure reliable data access.
 
-    **Instalación de FFmpeg:**
+![Architecture Diagram](assets/architecture-diagram.png)
 
-    * **Windows:**
-        1.  Ve a [ffmpeg.org/download.html](https://ffmpeg.org/download.html) y descarga una de las *builds* recomendadas (ej. `gpl.zip` de `gyan.dev`).
-        2.  Descomprime el archivo ZIP en una ubicación fácil de recordar (ej. `C:\ffmpeg`).
-        3.  **¡Añade la carpeta `bin` de FFmpeg a tu variable de entorno `PATH` de Windows!** (ej. `C:\ffmpeg\bin`).
-            * Busca "Editar las variables de entorno del sistema" en el menú de inicio.
-            * Haz clic en "Variables de entorno...".
-            * En "Variables del sistema", busca `Path`, selecciona "Editar".
-            * Haz clic en "Nuevo" y añade la ruta completa a la carpeta `bin` (ej. `C:\ffmpeg\bin`).
-            * Cierra y vuelve a abrir tu terminal (CMD/PowerShell) para que los cambios surtan efecto.
-        4.  Verifica la instalación abriendo una **nueva terminal** y escribiendo `ffmpeg -version`.
+### Workflow
 
-    * **macOS (usando [Homebrew](https://brew.sh/index_es)):**
-        ```bash
-        brew install ffmpeg
-        ```
+1. **Monitor**: Continuously checks configured streamers' status via Kick API
+2. **Record**: When live, records stream in chunks using FFmpeg
+3. **Detect**: Analyzes audio energy (RMS) to find emotional peaks
+4. **Transcribe**: Uses Whisper to transcribe only high-energy segments
+5. **Score**: Combines audio energy and keyword matching to rank moments
+6. **Cut**: Extracts highlight clips from the stream
+7. **Render**: Creates vertical format with subtitles and branding
+8. **Publish**: Uploads to TikTok automatically
 
-    * **Linux (ej. Debian/Ubuntu):**
-        ```bash
-        sudo apt update
-        sudo apt install ffmpeg
-        ```
+## Quick Start
 
-    * **Verificación (cualquier SO):** Abre una **nueva terminal** y ejecuta:
-        ```bash
-        ffmpeg -version
-        ```
-        Deberías ver información sobre la versión de FFmpeg instalada. Si ves un error como "command not found", algo salió mal con la instalación o la configuración del PATH.
+### Prerequisites
 
-### 2. Configuración del Entorno de Desarrollo
+Before installing Python dependencies, ensure you have:
 
-Clona el repositorio y configura tu entorno virtual:
+- **Python 3.10 or higher** (download from [python.org](https://www.python.org/downloads/))
+- **FFmpeg** (CRITICAL - required for all video/audio processing)
+
+#### Installing FFmpeg
+
+**Windows:**
+1. Download from [ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+2. Extract to a location (e.g., `C:\ffmpeg`)
+3. Add the `bin` folder to your PATH environment variable (e.g., `C:\ffmpeg\bin`)
+4. Verify: Open a new terminal and run `ffmpeg -version`
+
+**macOS (using Homebrew):**
+```bash
+brew install ffmpeg
+```
+
+**Linux (Debian/Ubuntu):**
+```bash
+sudo apt update
+sudo apt install ffmpeg
+```
+
+### Installation
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/streamliner-ai.git
+# 1. Clone the repository
+git clone https://github.com/your-username/streamliner-ai.git
 cd streamliner-ai
 
-# 2. Crear entorno virtual (ej. con Python 3.13.3)
+# 2. Create virtual environment
 python -m venv venv
 
-# Activar el entorno
-# En Windows/PowerShell:
+# Activate virtual environment
+# Windows PowerShell:
 .\venv\Scripts\Activate
-# En Linux/macOS:
+# Linux/macOS:
 source venv/bin/activate
 
-# 3. Instalar dependencias
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Configurar
-# (Obtén CLIENT_ID y CLIENT_SECRET del portal de desarrolladores de Kick)
+# 4. Configure environment
 cp .env.template .env
 cp config.yaml.example config.yaml
-# (Edita .env y config.yaml con tus datos)
+# Edit .env and config.yaml with your credentials
 
-# 5. Ejecutar una prueba con un video local
+# 5. Test with a local video
 python -m src.streamliner.cli process "data/video.mp4" --streamer "test" --dry-run
 
-# 6. Iniciar el modo de monitorización
+# 6. Start monitoring
 python -m src.streamliner.cli monitor
 ```
 
-## 🔧 Instalación y Configuración Detallada
+## Configuration
 
-### Prerrequisitos
+### Kick API Setup
 
-  * **Git:** Para clonar el repositorio.
-  * **Python (3.10 - 3.13):** Este proyecto fue desarrollado y probado exitosamente con Python 3.13.3. Se recomienda usar una versión igual o superior a la 3.10 para asegurar la compatibilidad de las librerías.
-  * **FFmpeg:** Dependencia de sistema crucial para cualquier operación de video/audio. Debe estar instalado y accesible en el PATH de tu sistema.
-  * **Cuenta de Desarrollador de Kick:** Necesaria para obtener las credenciales de la API.
+1. Create an application at [Kick Developer Portal](https://dev.kick.com)
+2. Set Redirect URL to `http://localhost` (required but not used)
+3. Select scopes: `channel:read`, `user:read`
+4. Copy your `Client ID` and `Client Secret`
+5. Add credentials to `.env`:
 
-### Pasos de Instalación
+```env
+KICK_CLIENT_ID="your_client_id"
+KICK_CLIENT_SECRET="your_client_secret"
+```
 
-Sigue los pasos de la [🚀 Guía de Inicio Rápido](#guía-de-inicio-rápido). El comando `python -m venv venv` usará la versión de Python que tengas por defecto en tu sistema.
+### TikTok API Setup
 
-### Configuración de la API de Kick
+1. Register your application at [TikTok Developer Center](https://developers.tiktok.com/)
+2. Configure a valid Redirect URI (e.g., `https://www.example.com/oauth`)
+3. Add credentials to `.env`:
 
-1.  **Crea una Aplicación:** Ve al [Portal de Desarrolladores de Kick](https://dev.kick.com) y crea una nueva aplicación.
-2.  **Redirect URL:** Durante la creación, te pedirá una "Redirect URL". Ingresa `http://localhost` o `http://localhost:8080`. Este campo es obligatorio pero no se usa en nuestro flujo de autenticación.
-3.  **Scopes:** Selecciona los permisos (`scopes`) que necesitará tu aplicación. Para este proyecto, se recomiendan:
-      * `channel:read` (Leer información del canal) - **Esencial**.
-      * `user:read` (Leer información de usuario).
-4.  **Obtén tus Credenciales:** Una vez creada la aplicación, Kick te proporcionará un **`Client ID`** y un **`Client Secret`**.
+```env
+TIKTOK_CLIENT_KEY=your_client_key
+TIKTOK_CLIENT_SECRET=your_client_secret
+TIKTOK_ENVIRONMENT=sandbox  # or 'production'
+```
 
-### Configuración de la API de TikTok
+4. Generate initial tokens:
 
-Para que Streamliner AI pueda publicar clips en tu cuenta de TikTok, necesitas obtener y configurar los tokens de autenticación iniciales.
+```bash
+python scripts/generate_tiktok_tokens.py
+```
 
-1.  **Configura tu Aplicación en TikTok Developer Center:**
-    Asegúrate de haber registrado tu aplicación en el [TikTok Developer Center](https://developers.tiktok.com/) y haber obtenido tu `Client Key` y `Client Secret`. Es crucial también configurar un "Redirect URI" válido (por ejemplo, `https://www.example.com/oauth`) en la configuración de tu aplicación de TikTok.
+Follow the prompts to authorize the application and paste the authorization code.
 
-2.  **Añade tus Credenciales Básicas al `.env`:**
-    Abre tu archivo `.env` en la raíz del proyecto y añade las siguientes líneas con tus claves obtenidas del Developer Center:
-    ```
-    TIKTOK_CLIENT_KEY=tu_client_key_aqui
-    TIKTOK_CLIENT_SECRET=tu_client_secret_aqui
-    ```
+### Application Configuration
 
-3.  **Ejecuta el Generador de Tokens:**
-    Abre tu terminal en la raíz del proyecto y ejecuta el script de utilidad diseñado para esto:
-    ```bash
-    python scripts/generate_tiktok_tokens.py
-    ```
-    El script te proporcionará una URL de autorización.
+Edit `config.yaml` to customize:
 
-4.  **Autoriza la Aplicación en tu Navegador:**
-    * Copia la URL proporcionada por el script y pégala en tu navegador web.
-    * Inicia sesión en TikTok con la cuenta en la que deseas que el bot publique los clips.
-    * Revisa y autoriza la aplicación para acceder a los scopes solicitados (`user.info.basic`, `video.upload`, `video.list`, etc.).
-    * Después de la autorización, serás redirigido a tu `Redirect URI`. La URL en tu navegador contendrá el `code` y el `open_id` en los parámetros de la URL (por ejemplo: `https://www.example.com/oauth?code=ABC...XYZ&open_id=123...456`).
+- **streamers**: List of Kick usernames to monitor
+- **detection**: Highlight detection parameters (thresholds, keywords, scoring weights)
+- **transcription**: Whisper model settings (model size, device, compute type)
+- **rendering**: Video rendering options (logo, subtitle style, fonts)
+- **publishing**: TikTok upload strategy and description template
 
-5.  **Introduce los Datos en la Terminal:**
-    Copia el valor del `code` y el `open_id` de la URL de redirección y pégalos en la terminal cuando el script `generate_tiktok_tokens.py` te lo pida.
+## Usage
 
-6.  **Tokens Guardados Automáticamente:**
-    El script procesará estos datos y guardará automáticamente el `TIKTOK_ACCESS_TOKEN`, `TIKTOK_REFRESH_TOKEN` y `TIKTOK_OPEN_ID` en tu archivo `.env`. ¡Tu bot ya estará configurado para interactuar con la API de TikTok\!
+### Monitor Mode (Production)
 
-**Nota:** El `TIKTOK_ACCESS_TOKEN` se refrescará automáticamente según sea necesario, por lo que no tendrás que ejecutar este script con frecuencia una vez que hayas obtenido los tokens iniciales. Para pruebas en desarrollo, asegúrate de que `TIKTOK_ENVIRONMENT=sandbox` esté configurado en tu `.env`; para producción, cámbialo a `TIKTOK_ENVIRONMENT=production` (una vez que tu aplicación haya sido aprobada por TikTok).
+Continuously monitors configured streamers and processes highlights automatically:
 
-### Configuración del Proyecto
+```bash
+python -m src.streamliner.cli monitor
+```
 
-1.  **Variables de Entorno (`.env`):**
-    Copia la plantilla `cp .env.template .env` y rellena los siguientes campos con tus credenciales:
+Press `Ctrl+C` to stop gracefully.
 
-    ```dotenv
-    KICK_CLIENT_ID="el_id_que_te_dio_kick"
-    KICK_CLIENT_SECRET="el_secreto_que_te_dio_kick"
+### Process VOD (Testing)
 
-    # Rellena también las credenciales para TikTok y S3/R2 si los usarás.
-    ```
+Process a downloaded video file or URL:
 
-2.  **Configuración de la Aplicación (`config.yaml`):**
-    Copia la plantilla `cp config.yaml.example config.yaml` y edita la lista de `streamers:` con los nombres de los canales de Kick que quieres monitorizar.
+```bash
+# Process local file
+python -m src.streamliner.cli process "path/to/video.mp4" --streamer "streamer_name" --dry-run
 
-## 💻 Uso de la Aplicación
+# Process from URL
+python -m src.streamliner.cli process "https://kick.com/video/..." --streamer "streamer_name"
+```
 
-Asegúrate de tener siempre el entorno virtual activado (`source venv/bin/activate`).
+### Upload Clip
 
-  * **Modo Monitor (Producción):** Es el modo principal, diseñado para correr 24/7. Vigilará a los streamers de tu configuración y procesará sus VODs automáticamente.
+Upload a pre-rendered clip to TikTok:
 
-    ```bash
-    python -m src.streamliner.cli monitor
-    ```
+```bash
+python -m src.streamliner.cli upload \
+    --file "data/clips/my_clip_rendered.mp4" \
+    --streamer "test" \
+    --strategy MULTIPART
+```
 
-    Para detenerlo, presiona `Ctrl + C` en la terminal.
+### TikTok Diagnostics
 
-  * **Modo de Procesamiento Manual (Pruebas):** Procesa un video que ya tengas descargado.
+Check sandbox state and backoff status:
 
-    ```bash
-    python -m src.streamliner.cli process --file "ruta/del/video.mp4" --streamer "nombre_streamer" --dry-run
-    ```
+```bash
+# View current state
+python -m src.streamliner.cli tiktok-diagnose
 
-### 🛰️ Comandos CLI para TikTok (Sandbox y Producción)
+# Clear sandbox state
+python -m src.streamliner.cli tiktok-clear-sandbox-state
 
-Estos comandos permiten probar y operar la publicación de clips en TikTok desde la línea de comandos. Asegúrate de haber configurado la sección de TikTok en `.env` y `config.yaml` antes de usarlos.
+# Upload with automatic backoff handling
+python -m src.streamliner.cli upload-when-ready \
+    --file "data/clips/my_clip.mp4" \
+    --streamer "test" \
+    --max-wait-seconds 2400
+```
 
-- `upload`: sube un archivo local a TikTok según la estrategia configurada.
-    ```bash
-    # Subir un clip local como borrador (inbox) en SANDBOX con estrategia automática
-    python -m src.streamliner.cli upload \
-        --file "data/clips_generados/mi_clip_rendered.mp4" \
-        --streamer "test"
+## Docker Deployment
 
-    # Forzar estrategia específica (MULTIPART|BYTES|DIRECT_POST) y deshabilitar fallback
-    python -m src.streamliner.cli upload \
-        --file "data/clips_generados/mi_clip_rendered.mp4" \
-        --streamer "test" \
-        --strategy MULTIPART \
-        --no-fallback
-    ```
+Docker simplifies deployment by packaging the application with all dependencies including FFmpeg:
 
-- `tiktok-diagnose`: imprime el estado persistente del SANDBOX para evitar reintentos fútiles.
-    ```bash
-    python -m src.streamliner.cli tiktok-diagnose
-    # Ejemplo de salida: {"last_spam_risk_ts": 1758539474.15, "bytes_unavailable": true}
-    ```
+```bash
+# Build the image
+docker-compose build
 
-- `tiktok-clear-sandbox-state`: limpia el estado persistente del SANDBOX.
-    ```bash
-    python -m src.streamliner.cli tiktok-clear-sandbox-state
-    ```
+# Start the service
+docker-compose up -d
 
-- `upload-when-ready`: espera el cooldown/backoff y reintenta la subida automáticamente.
-    ```bash
-    python -m src.streamliner.cli upload-when-ready \
-        --file "data/clips_generados/mi_clip_rendered.mp4" \
-        --streamer "test" \
-        --max-wait-seconds 2400 \
-        --poll-interval 20
-    ```
+# View logs
+docker-compose logs -f
 
-Notas importantes (especialmente en SANDBOX):
+# Stop the service
+docker-compose down
+```
 
-- En SANDBOX, la estrategia recomendada es `MULTIPART`. La app maneja automáticamente:
-    - Cálculo de chunks correcto y reintentos puntuales.
-    - Persistencia de backoff ante `spam_risk_too_many_pending_share` (evita spamear INIT).
-    - Confirmación/finalización “best-effort” del inbox publish.
-- El método `BYTES` suele responder `403/404` en SANDBOX si tu app no tiene acceso. Por defecto está deshabilitado vía `config.yaml` y el sistema persiste `bytes_unavailable` tras detectar este caso.
-- `DIRECT_POST` requiere el scope de producción `video.publish` y, típicamente, aprobación de app. En SANDBOX normalmente no está disponible.
+## Development
 
-Parámetros relevantes en `config.yaml` (sección de publicación):
+### VS Code Setup
 
-- `publishing.upload_strategy`: `AUTO`|`MULTIPART`|`BYTES`|`DIRECT_POST`.
-- `publishing.upload_cooldown_seconds`: espera breve antes de iniciar una subida.
-- `publishing.sandbox_spam_backoff_seconds`: backoff ante `spam_risk` en SANDBOX.
-- `publishing.sandbox_allow_bytes_upload`: `false` por defecto (BYTES deshabilitado en SANDBOX).
-- `publishing.sandbox_allow_direct_post`: `false` por defecto.
-
-## 🐳 Despliegue con Docker
-
-Docker simplifica el despliegue al empaquetar la aplicación con todas sus dependencias (incluyendo `ffmpeg`).
-
-1.  **Construye la imagen:** `docker-compose build`
-2.  **Inicia el servicio:** `docker-compose up -d`
-3.  **Ver los logs:** `docker-compose logs -f`
-4.  **Detener el servicio:** `docker-compose down`
-
-## 🛠️ Guía de Desarrollo
-
-### Configuración de Visual Studio Code
-
-Crea una carpeta `.vscode` en la raíz del proyecto con los siguientes archivos para una experiencia de desarrollo óptima.
-
-**`.vscode/settings.json`** (habilita el formateo automático con `ruff`)
+Create `.vscode/settings.json` for automatic formatting:
 
 ```json
 {
@@ -301,79 +324,72 @@ Crea una carpeta `.vscode` en la raíz del proyecto con los siguientes archivos 
 }
 ```
 
-**`.vscode/launch.json`** (permite depurar con F5)
+### Code Quality
 
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Monitor Mode",
-            "type": "python",
-            "request": "launch",
-            "module": "src.streamliner.cli",
-            "args": ["monitor"],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Process Local File (Dry Run)",
-            "type": "python",
-            "request": "launch",
-            "module": "src.streamliner.cli",
-            "args": [
-                "process",
-                "--file", "data/test_video.mp4", // Cambia esto a un video de prueba
-                "--streamer", "teststreamer",
-                "--dry-run"
-            ],
-            "console": "integratedTerminal"
-        }
-    ]
-}
+```bash
+# Check for errors
+ruff check .
+
+# Format code
+ruff format .
 ```
 
-El repositorio está configurado para una experiencia de desarrollo fluida con VS Code y pruebas automatizadas. Consulta los archivos `.vscode/settings.json`, `.vscode/launch.json` y `.github/workflows/ci.yml` para más detalles.
+### Testing
 
-  * **Ejecutar chequeos de calidad localmente:**
-    ```bash
-    # Revisa errores lógicos
-    ruff check .
-    # Revisa y arregla el formato del código
-    ruff format .
-    ```
-  * **Ejecutar pruebas unitarias:**
-    ```bash
-    pytest
-    ```
+```bash
+# Run all tests
+pytest
 
-## 🧠 Profundización Técnica:
+# Run specific test file
+pytest tests/test_detector.py
 
-* **Async-first:** La elección de `asyncio` permite manejar múltiples operaciones de I/O (esperas de red para la API de Kick, descargas de video, subidas) de forma concurrente en un solo hilo, lo que es mucho más eficiente en recursos que un enfoque basado en hilos tradicional.
-  * **Subprocesos No Bloqueantes:** Usamos `asyncio.create_subprocess_exec` para llamar a `ffmpeg` y `streamlink`. Esto permite que nuestro programa principal continúe funcionando y manejando otras tareas mientras estos programas externos, que pueden tardar mucho, hacen su trabajo en segundo plano.
-  * **Detector Optimizado:** La decisión de no transcribir el VOD completo es la optimización más importante del sistema. El análisis de energía RMS es computacionalmente muy barato y actúa como un filtro de alta velocidad para reducir un VOD de horas a solo unos minutos de audio "interesante", que son los únicos que se procesan con el costoso modelo de IA.
-### El Camino a la API Oficial
+# Run with coverage
+pytest --cov=src/streamliner
+```
 
-El desarrollo de este monitor fue un caso de estudio en perseverancia y depuración de sistemas anti-bots. Los intentos iniciales de acceder a los endpoints de Kick mediante `httpx` y `Playwright` (simulando ser un navegador) fueron consistentemente bloqueados con errores `403 Forbidden` por una robusta política de seguridad de Cloudflare (probablemente basada en TLS/JA3 Fingerprinting).
+## Technical Deep Dive
 
-La **solución definitiva**, descubierta a través de investigación y pruebas con Google Apps Script, fue abandonar los endpoints no oficiales y utilizar el **flujo de autenticación `client_credentials` de OAuth2**, que es el método oficial que Kick proporciona a los desarrolladores.
+### Async-First Architecture
 
-El monitor actual implementa esta estrategia:
+The choice of `asyncio` enables handling multiple I/O operations (API calls, downloads, uploads) concurrently in a single thread, which is far more resource-efficient than traditional thread-based approaches.
 
-1.  Solicita un `App Access Token` al endpoint `https://id.kick.com/oauth/token` usando las credenciales de desarrollador.
-2.  Almacena este token en memoria y lo refresca automáticamente antes de que expire.
-3.  Utiliza el token para hacer llamadas autenticadas al endpoint público `/public/v1/channels`, que permite consultar el estado de múltiples streamers de forma eficiente.
+- **Non-blocking Subprocesses**: Uses `asyncio.create_subprocess_exec` for FFmpeg and Streamlink, allowing the main program to continue while external processes run
+- **Concurrent Monitoring**: Single process monitors multiple streamers simultaneously
+- **Efficient Resource Usage**: Minimal CPU overhead during I/O-bound operations
 
-Este enfoque es más estable, ligero (no requiere un navegador completo) y respetuoso con la plataforma.
+### Optimized Detection
 
-## 📈 Mejoras Futuras
+The decision not to transcribe the entire VOD is the system's most important optimization:
 
-  * **Gestión Avanzada de Tokens:** Guardar el `access_token` y su tiempo de expiración en un archivo o una base de datos (como Redis) para que el estado persista si se reinicia el bot.
-  * **Procesamiento en Tiempo Real:** Rediseñar el `downloader` para que trabaje con "chunks" de video, permitiendo la creación de clips a los pocos minutos de que ocurra la acción en vivo.
-  * **Dashboard de Métricas:** Integrar Prometheus y Grafana para visualizar el estado de los monitores, clips generados, etc.
+1. **RMS Energy Analysis**: Computationally cheap, acts as a high-speed filter
+2. **Selective Transcription**: Only processes "interesting" audio segments with Whisper
+3. **Keyword Scoring**: Combines audio energy with 200+ contextual keywords
+4. **Scene Detection**: Bonus scoring for highlights coinciding with scene changes
 
-  * **Scoring con Machine Learning:** Entrenar un modelo más avanzado que pueda analizar no solo el audio, sino también la velocidad del chat o eventos del juego para una detección de highlights más precisa.
-  * **Soporte Multiplataforma:** Abstraer los módulos para añadir soporte para Twitch, YouTube y otras plataformas de destino.
+This approach reduces hours of VOD to minutes of processing time.
 
------
+### OAuth2 Implementation
 
-*Este proyecto representa un intenso viaje de desarrollo, desde la idea inicial hasta una solución robusta y funcional. Para su construcción y depuración, conté con la asistencia de un modelo de IA avanzado, lo que me permitió explorar diferentes arquitecturas y resolver complejos desafíos técnicos, como eludir protecciones anti-bot y, finalmente, implementar la API oficial de Kick.*
+The project evolved from initial attempts using unofficial endpoints (blocked by Cloudflare) to the official OAuth2 Client Credentials flow:
+
+1. Requests an App Access Token from `https://id.kick.com/oauth/token`
+2. Stores token in memory and refreshes automatically before expiration
+3. Uses token for authenticated calls to `/public/v1/channels`
+
+This approach is more stable, lightweight, and respectful of the platform.
+
+## Future Improvements
+
+- **Advanced Token Management**: Persist access tokens to Redis or database for state preservation across restarts
+- **Real-time Processing Enhancement**: Redesign downloader to work with video chunks for near-instant clip creation
+- **Metrics Dashboard**: Integrate Prometheus and Grafana for monitoring and visualization
+- **Machine Learning Scoring**: Train advanced models analyzing chat velocity and game events
+- **Multi-platform Support**: Abstract modules to support Twitch, YouTube, and other platforms
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Acknowledgments
+
+This project represents an intensive development journey from initial concept to a robust, functional solution. The development process involved exploring different architectures and solving complex technical challenges, including bypassing anti-bot protections and ultimately implementing the official Kick API.
